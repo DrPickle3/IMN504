@@ -35,8 +35,8 @@ public:
 	//Constructeur-Destructeur
 
 	/**
-		Constructeur de la classe à partir du nom du matériau
-		@param name : nom du matériau
+		Constructeur de la classe ï¿½ partir du nom du matï¿½riau
+		@param name : nom du matï¿½riau
 	*/
 	MassSpringMaterial(string name,Texture2D *t);
 
@@ -45,17 +45,17 @@ public:
 	*/
 	~MassSpringMaterial();
 
-	//Méthodes
+	//Mï¿½thodes
 
 	/**
-		Méthode virtuelle qui est appelée pour faire le rendu d'un objet en utilisant ce matériau
+		Mï¿½thode virtuelle qui est appelï¿½e pour faire le rendu d'un objet en utilisant ce matï¿½riau
 		@param o : Node/Objet pour lequel on veut effectuer le rendu
 	*/
 	virtual void render(Node* o);
 
 	/**
-		Méthode virtuelle qui est appelée pour modifier une valeur d'un paramètre nécessaire pour le rendu
-		@param o : Node/Objet concerné par le rendu
+		Mï¿½thode virtuelle qui est appelï¿½e pour modifier une valeur d'un paramï¿½tre nï¿½cessaire pour le rendu
+		@param o : Node/Objet concernï¿½ par le rendu
 		@param elapsedTime : temps
 	*/
 	virtual void animate(Node* o, const float elapsedTime);
@@ -69,9 +69,9 @@ public:
 
 
 	/**
-	* Méthode va gérer la simulation au niveau global. Cette méthode est responsable de calculer toutes les forces a appliquer sur chaque sommet et de mettre a jour la simulation en appelant updateSimulation.
+	* Mï¿½thode va gï¿½rer la simulation au niveau global. Cette mï¿½thode est responsable de calculer toutes les forces a appliquer sur chaque sommet et de mettre a jour la simulation en appelant updateSimulation.
 	* Les forces a ajouter sont :
-	*	La gravité
+	*	La gravitï¿½
 	*	L'amortissement
 	*	Le vent et sa friction
 	*	Les ressorts entre chaque sommet
@@ -82,7 +82,7 @@ public:
 
 
 	/**
-* Cette méthode itère sur tous les ressorts du modèle et appele pour chaque la fonction computeSpringForce
+* Cette mï¿½thode itï¿½re sur tous les ressorts du modï¿½le et appele pour chaque la fonction computeSpringForce
 	@param m : le ModelGL custom a mettre a jour
 */
 	void computeAllSpringForces(CustomModelGL* m);
@@ -92,13 +92,13 @@ public:
 	//void computeSpringForce(CustomModelGL* m, int i, int j, int n_i, int n_j,float kFactor = 1.0f);
 
 	/**
-	* Cette méthode doit calculer le comportement du ressort s. Elle doit notamment calculer pour les sommets id1 et id2 a chaque bout du ressort la force appliquée par le ressort. Cette fonction doit remplir le tableau F du modèle pour les éléments id1 et id2.
+	* Cette mï¿½thode doit calculer le comportement du ressort s. Elle doit notamment calculer pour les sommets id1 et id2 a chaque bout du ressort la force appliquï¿½e par le ressort. Cette fonction doit remplir le tableau F du modï¿½le pour les ï¿½lï¿½ments id1 et id2.
 	* La structure du ressort s est la suivante :
 	* {
 	*		int id1;	// Indice du sommet 1
 	*		int id2;	// Indice du sommet 2
 	*		float length; // longueur au repos
-	*		float KsFactor; // modulation du facteur de rigidité global. Ce facteur va "moduler" le facteur de rigidité globale passé en paramètre. Pour chaque ressort s, le facteur de rigidité total est KsFactor * physik.ks_Stiffness
+	*		float KsFactor; // modulation du facteur de rigiditï¿½ global. Ce facteur va "moduler" le facteur de rigiditï¿½ globale passï¿½ en paramï¿½tre. Pour chaque ressort s, le facteur de rigiditï¿½ total est KsFactor * physik.ks_Stiffness
 	*	}
 	@param m : le ModelGL custom a mettre a jour
 	@param s : le resort en question
@@ -108,8 +108,8 @@ public:
 
 
 	/**
-	* Méthode appelée pour mettre a jour la simulation de l'objet. Cette métohde repose sur l'intégration semi-implicite d'Euler.
-	* Cette méthode doit calculer et mettre a jour la vitesse (tableau V) ainsi que la position (tableau listVertex de l'objet geometricModel) de chacun des éléments de chacun des éléments du modèle m.
+	* Mï¿½thode appelï¿½e pour mettre a jour la simulation de l'objet. Cette mï¿½tohde repose sur l'intï¿½gration semi-implicite d'Euler.
+	* Cette mï¿½thode doit calculer et mettre a jour la vitesse (tableau V) ainsi que la position (tableau listVertex de l'objet geometricModel) de chacun des ï¿½lï¿½ments de chacun des ï¿½lï¿½ments du modï¿½le m.
 		@param m : le ModelGL custom a mettre a jour
 	*/
 
@@ -119,6 +119,7 @@ protected:
 	GLProgram* vp;
 	GLProgram* fp;
 
+	Texture2D* m_texture;  // Store texture for traditional binding fallback
 
 	glm::dvec3 up_direction, wind_direction;
 

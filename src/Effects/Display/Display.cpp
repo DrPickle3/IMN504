@@ -1,5 +1,6 @@
 
 #include "Display.h"
+#include "Texture2D.h"
 #include <glm/gtc/type_ptr.hpp>
 
 Display::Display(std::string name) : EffectGL(name) {
@@ -19,7 +20,13 @@ Display::~Display() {}
 void Display::apply(FrameBufferObject *src, FrameBufferObject *target) {
 
     // note the most efficient but here for usability purposes (could be set up in the constructor if src is constant)
-    glProgramUniformHandleui64ARB(fp->getId(), l_Texture, src->getColorTexture()->getHandle());
+    if (g_bindlessTexturesSupported) {
+        glProgramUniformHandleui64ARB(fp->getId(), l_Texture, src->getColorTexture()->getHandle());
+    } else {
+        // Traditional texture binding fallback
+        glBindTextureUnit(0, src->getColorTexture()->getId());
+        glProgramUniform1i(fp->getId(), l_Texture, 0);
+    }
 
     if (target)
         target->enable();

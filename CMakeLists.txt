@@ -41,17 +41,26 @@ set_target_properties(glad PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(glad PUBLIC ${LIBS_DIR}/glad/include)
 set_target_properties(glad PROPERTIES FOLDER Libs)
 
-# GLFW - manually specify include directories and libraries
-set(GLFW_INCLUDE_DIR ${LIBS_DIR}/GLFW/include)
-set(GLFW_LIBRARY_DIR ${LIBS_DIR}/GLFW/lib)
+if (WIN32)
 
-# Assuming glfw3.lib or glfw3.a is available in ${GLFW_LIBRARY_DIR}
-add_library(glfw STATIC IMPORTED)
-set_target_properties(glfw PROPERTIES
-    IMPORTED_LOCATION ${GLFW_LIBRARY_DIR}/glfw3.lib
-    INTERFACE_INCLUDE_DIRECTORIES ${GLFW_INCLUDE_DIR}
-)
-set_target_properties(glfw PROPERTIES FOLDER Libs/GLFW3)
+    set(GLFW_INCLUDE_DIR ${LIBS_DIR}/GLFW/include)
+    set(GLFW_LIBRARY_DIR ${LIBS_DIR}/GLFW/lib)
+
+    add_library(glfw STATIC IMPORTED)
+    set_target_properties(glfw PROPERTIES
+        IMPORTED_LOCATION ${GLFW_LIBRARY_DIR}/glfw3.lib
+        INTERFACE_INCLUDE_DIRECTORIES ${GLFW_INCLUDE_DIR}
+    )
+
+else()
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GLFW REQUIRED glfw3)
+
+    include_directories(${GLFW_INCLUDE_DIRS})
+    link_directories(${GLFW_LIBRARY_DIRS})
+
+endif()
 
 # Logger
 add_library(Logger STATIC ${LIBS_DIR}/Logger/ImGUILogger.cpp)
@@ -82,11 +91,27 @@ message("Getting all sources... DONE")
 # Executable
 # ============================================================================
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SHADERS_FILES})
-target_include_directories(${PROJECT_NAME} PRIVATE 
-    ${SOURCE_DIR} 
-    ${LIBS_DIR}/glad/include 
-    ${GLFW_INCLUDE_DIR}
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${SOURCE_DIR}
+    ${LIBS_DIR}/glad/include
     ${LIBS_DIR}/Logger
 )
-target_link_libraries(${PROJECT_NAME} imgui glm stb glad glfw Logger image_DXT)
+target_link_libraries(${PROJECT_NAME}
+    imgui
+    glm
+    stb
+    glad
+    Logger
+    image_DXT
+)
+
+if (UNIX)
+    target_link_libraries(${PROJECT_NAME}
+        ${GLFW_LIBRARIES}
+        GL
+        dl
+        pthread
+    )
+endif()
+
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})

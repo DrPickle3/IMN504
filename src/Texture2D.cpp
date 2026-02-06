@@ -4,6 +4,21 @@
 #include <iostream>
 #include <stb/stb_image.h>
 
+// Global flag for bindless texture support
+bool g_bindlessTexturesSupported = false;
+
+void checkBindlessTextureSupport() {
+    static bool checked = false;
+    if (!checked) {
+        g_bindlessTexturesSupported = (glGetTextureHandleARB != nullptr) && 
+                                       (glMakeTextureHandleResidentARB != nullptr);
+        if (!g_bindlessTexturesSupported) {
+            std::cout << "[INFO] Bindless textures not supported, using traditional texture binding" << std::endl;
+        }
+        checked = true;
+    }
+}
+
 Texture2D::Texture2D(const std::string &filename) : id(0), handle(0), name(filename), format(GL_RGBA8), image(NULL) {
     int channels;
 
@@ -42,8 +57,11 @@ void Texture2D::loadToGPU() {
 }
 
 void Texture2D::makeResident() {
-    handle = glGetTextureHandleARB(id);
-    glMakeTextureHandleResidentARB(handle);
+    checkBindlessTextureSupport();
+    if (g_bindlessTexturesSupported) {
+        handle = glGetTextureHandleARB(id);
+        glMakeTextureHandleResidentARB(handle);
+    }
 }
 
 Texture2D::~Texture2D() {}

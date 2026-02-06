@@ -4,6 +4,10 @@
 #include <glad/glad.h>
 #include <string>
 
+// Global flag for bindless texture support (defined in Texture2D.cpp)
+extern bool g_bindlessTexturesSupported;
+void checkBindlessTextureSupport();
+
 class Texture2D {
 public:
     Texture2D(const std::string &filename);

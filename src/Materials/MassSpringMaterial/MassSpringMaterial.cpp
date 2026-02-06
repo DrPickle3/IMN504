@@ -5,7 +5,7 @@
 
 
 MassSpringMaterial::MassSpringMaterial(std::string name,Texture2D *t) :
-	MaterialGL(name)
+	MaterialGL(name), m_texture(t)
 {
 
 	vp = new GLProgram(MaterialPath + "MassSpringMaterial/MassSpringMaterial-VS.glsl", GL_VERTEX_SHADER);
@@ -27,7 +27,12 @@ MassSpringMaterial::MassSpringMaterial(std::string name,Texture2D *t) :
 	l_specColor = glGetUniformLocation(fp->getId(), "specularColor");
 
 	l_tex = glGetUniformLocation(fp->getId(), "ColorTex");
-	glProgramUniformHandleui64ARB(fp->getId(), l_tex, t->getHandle());
+	if (g_bindlessTexturesSupported) {
+		glProgramUniformHandleui64ARB(fp->getId(), l_tex, t->getHandle());
+	} else {
+		// Set texture unit 0 for traditional binding (will bind texture in render)
+		glProgramUniform1i(fp->getId(), l_tex, 0);
+	}
 
 
 	param.albedo = glm::vec3(0.2, 0.7, 0.8);
@@ -62,7 +67,10 @@ MassSpringMaterial::~MassSpringMaterial()
 
 void MassSpringMaterial::render(Node* o)
 {
-
+	// Bind texture for traditional mode
+	if (!g_bindlessTexturesSupported && m_texture) {
+		glBindTextureUnit(0, m_texture->getId());
+	}
 
 	m_ProgramPipeline->bind();
 

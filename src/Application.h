@@ -2,7 +2,7 @@
 #define _APPLICATION
 
 #include "EngineGL.h"
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
 class Application {
