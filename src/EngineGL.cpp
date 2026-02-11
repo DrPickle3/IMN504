@@ -99,6 +99,14 @@ void EngineGL::displayInterface() {
 
         myFBO->displayInterface();
     }
+
+    Node* drape = scene->getNode("Drape");  //So I can tweak its parameters real-time
+    if(drape) {
+        MassSpringMaterial* msMat = dynamic_cast<MassSpringMaterial*>(drape->getMaterial());
+        if(msMat) {
+            msMat->displayInterface();
+        }
+    }
 }
 
 // Message callbck error for getting OpenGL problems

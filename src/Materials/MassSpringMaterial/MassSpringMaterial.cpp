@@ -121,10 +121,27 @@ void MassSpringMaterial::computeMassSpringAnimation(CustomModelGL* m)
 	*  - Ajout de la gravit�
 	*  - Une m�thode classique des simulations num�riques est d'ajouter une force d'ammortissement pour simuler la r�sistance de l'air : On peut l'approximer par damp  * mass * V
 	*  - La force due au vent peut �tre d�finie comme la masse d'une particule multipli�e par sa vitesse par rapport au vent : mass * (V - W) avec W = wind * wind_direction) 
-	*  -  La force de friction du tissu avec l'air est plus complexe et d�pend de la normale des surfaces : Un exemple d'approximation : -wFr * (N * (W - V))* N) 
+	*  - La force de friction du tissu avec l'air est plus complexe et d�pend de la normale des surfaces : Un exemple d'approximation : -wFr * (N * (W - V))* N) 
 	*  - Ajouter les forces des ressorts 
 	* 
 	*********************/
+
+	for (int i=0; i < m->F.size(); i++) {	//Putting all forces to zero to not accumulate them every frame
+		m->F[i] = glm::vec3(0.0f);
+	}
+
+	glm::vec3 gravity = up_direction * -9.8;	//Gravity
+	for (int i=0; i < m->F.size(); i++) {
+		m->F[i] += gravity * physik.mass;
+	}
+
+	for (int i=0; i < m->F.size(); i++) {	//Air dampening
+		m->F[i] += (double)-physik.kd_dampening * physik.mass * m->V[i];
+	}
+
+	for (int i=0; i < m->F.size(); i++) {	//Wind
+		m->F[i] += (double)physik.mass * (m->V[i] - (double)physik.wind * wind_direction);
+	}
 
 
 	/*Ajouter les forces des ressorts*/
@@ -158,12 +175,31 @@ void MassSpringMaterial::computeAllSpringForces(CustomModelGL* m)
 void MassSpringMaterial::updateSimulation(CustomModelGL* m)
 {
 	/*A compl�ter*/
+	GeometricModel* gModel = m->getGeometricModel();
+
+	for (int i = 0; i < m->V.size(); i++) {
+		m->V[i] += m->F[i] / (double)physik.mass * (double)physik.deltaTime;
+
+		glm::vec3 newPos =  glm::vec3(gModel->listVertex[i] + glm::vec3(m->V[i]) * physik.deltaTime);
+		gModel->listVertex[i] = newPos;
+	}
 	
+	m->recomputeNormals();
+	m->updatePositions();
 }
 
 void MassSpringMaterial::computeSpringForce(CustomModelGL* m, Spring s)
 {
 	/**A compl�ter**/
+	GeometricModel* gModel = m->getGeometricModel();
+
+	glm::vec3 p1 = gModel->listVertex[s.id1];
+	glm::vec3 p2 = gModel->listVertex[s.id2];
+
+	glm::vec3 force = s.KsFactor * (glm::length(p2 - p1) - s.length) * (p2 - p1) / glm::length(p2 - p1);
+
+	m->F[s.id1] += force;
+	m->F[s.id2] -= force;
 }
 
 
