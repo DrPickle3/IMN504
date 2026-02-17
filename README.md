@@ -1,6 +1,3 @@
 # IMN504
 
-1- Mettre la struct spring et appliquer les 4 ressorts + centre au model3D
-2- update() de animate ya 2 fonctions pour calculer la somme des ressorts a trouver
-
-On itere sur les ressorts.
+J'ai du adapter le CMake parce que je suis sur Linux. Je renvoie la solution avec mes fichiers mais surement qu'il faudra build avec le CMake original.

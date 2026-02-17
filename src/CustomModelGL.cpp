@@ -74,48 +74,55 @@ void CustomModelGL::createDeformableGrid() {
 
     */
 
-    float normalKs = 100.0f;
-    float weakKs = 50.2f;
+    constexpr float normalKs = 1.0f;
+    constexpr float diagKs = 0.75f;
+    constexpr float longKs = 0.5f;
 
     for (int i = 0; i < (int)m_Model->listVertex.size(); i++) {
         int x = i / m_nbElements;
         int y = i % m_nbElements;
 
-        float restLength = glm::length(m_Model->listVertex[0] - m_Model->listVertex[1]);
-        float diagonal = sqrt(restLength * restLength * 2);
+        float length = 0.0f;
+        // float restLength = glm::length(m_Model->listVertex[0] - m_Model->listVertex[1]);
+        // float diagonal = sqrt(restLength * restLength * 2);
 
         if (y + 1 < m_nbElements) { // Each right neighbour
-            Spring s = {indice(x, y), indice(x, y + 1), restLength, normalKs};
+            Spring s = {indice(x, y), indice(x, y + 1), length, normalKs};
             springs.push_back(s);
         }
 
         if (x + 1 < m_nbElements) { // Each down neighbour
-            Spring s = {indice(x, y), indice(x + 1, y), restLength, normalKs};
+            Spring s = {indice(x, y), indice(x + 1, y), length, normalKs};
             springs.push_back(s);
         }
 
         if (x + 2 < m_nbElements) { // Each down x2 neighbour
-            Spring s = {indice(x, y), indice(x + 2, y),  2 * restLength, weakKs};
+            Spring s = {indice(x, y), indice(x + 2, y),  2 * length, longKs};
             springs.push_back(s);
         }
 
         if (y + 2 < m_nbElements) { // Each right x2 neighbour
-            Spring s = {indice(x, y), indice(x, y + 2), 2 * restLength, weakKs};
+            Spring s = {indice(x, y), indice(x, y + 2), 2 * length, longKs};
             springs.push_back(s);
         }
 
         if (x + 1 < m_nbElements && y + 1 < m_nbElements) { // down right
-            Spring s = {indice(x, y), indice(x + 1, y + 1), diagonal, weakKs};
+            Spring s = {indice(x, y), indice(x + 1, y + 1), length, diagKs};
             springs.push_back(s);
         }
 
         if (x + 1 < m_nbElements && y - 1 >= 0) { // down left
-            Spring s = {indice(x, y), indice(x + 1, y - 1), diagonal, weakKs};
+            Spring s = {indice(x, y), indice(x + 1, y - 1), length, diagKs};
             springs.push_back(s);
         }
     }
 
-	// std::cout << "Springs length :" << springs.size() << std::endl;
+    for (int i=0; i < springs.size(); i++) {
+        Spring s = springs[i];
+        springs[i].length = glm::length(m_Model->listVertex[s.id1] - m_Model->listVertex[s.id2]);
+    }
+
+	// std::cout << "Springs length :" << springs[springs.size() - 1].length << std::endl;
 	// std::cout << "Size of the grid :" << m_nbElements << std::endl;
 
     /********************************************************************************************************************************************/

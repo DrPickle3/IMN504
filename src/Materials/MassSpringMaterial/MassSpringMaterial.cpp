@@ -44,7 +44,7 @@ MassSpringMaterial::MassSpringMaterial(std::string name,Texture2D *t) :
 	physik.deltaTime = 0.0f;
 	physik.kd_dampening = 15.0f;
 	physik.ks_Stiffness = 5500.0f;
-	physik.wind = 0.0f;
+	physik.wind = 1.0f;
 	physik.windFriction = 0.5f;
 
 
@@ -126,21 +126,32 @@ void MassSpringMaterial::computeMassSpringAnimation(CustomModelGL* m)
 	* 
 	*********************/
 
+	GeometricModel* gModel = m->getGeometricModel();
+
 	for (int i=0; i < m->F.size(); i++) {	//Putting all forces to zero to not accumulate them every frame
 		m->F[i] = glm::vec3(0.0f);
 	}
 
-	glm::vec3 gravity = up_direction * -9.8;	//Gravity
+	glm::vec3 gravity = up_direction * -9.81;	//Gravity g * m
 	for (int i=0; i < m->F.size(); i++) {
 		m->F[i] += gravity * physik.mass;
 	}
 
-	for (int i=0; i < m->F.size(); i++) {	//Air dampening
+	for (int i=0; i < m->F.size(); i++) {	//Air dampening kd * m * V
 		m->F[i] += (double)-physik.kd_dampening * physik.mass * m->V[i];
 	}
 
-	for (int i=0; i < m->F.size(); i++) {	//Wind
-		m->F[i] += (double)physik.mass * (m->V[i] - (double)physik.wind * wind_direction);
+
+	glm::dvec3 wind = (double)physik.wind * wind_direction;
+	for (int i=0; i < m->F.size(); i++) {	//Wind m * (V - W), where W = wind * direction
+		m->F[i] += (double)physik.mass * (m->V[i] - wind);
+	}
+
+	for (int i=0; i < m->F.size(); i++) {	//Wind friction -wFr * (N * (W - V))* N)
+		glm::dvec3 wv = wind - m->V[i];
+		glm::vec3 n = gModel->listNormals[i];
+		float n2 = glm::dot(n, glm::vec3(wv));
+		m->F[i] += -physik.windFriction * n2 * n;
 	}
 
 
@@ -181,11 +192,8 @@ void MassSpringMaterial::updateSimulation(CustomModelGL* m)
 		m->V[i] += m->F[i] / (double)physik.mass * (double)physik.deltaTime;
 
 		glm::vec3 newPos =  glm::vec3(gModel->listVertex[i] + glm::vec3(m->V[i]) * physik.deltaTime);
-		gModel->listVertex[i] = newPos;
+		gModel->listVertex[i] += m->V[i] * (double)physik.deltaTime;
 	}
-	
-	m->recomputeNormals();
-	m->updatePositions();
 }
 
 void MassSpringMaterial::computeSpringForce(CustomModelGL* m, Spring s)
@@ -196,7 +204,9 @@ void MassSpringMaterial::computeSpringForce(CustomModelGL* m, Spring s)
 	glm::vec3 p1 = gModel->listVertex[s.id1];
 	glm::vec3 p2 = gModel->listVertex[s.id2];
 
-	glm::vec3 force = s.KsFactor * (glm::length(p2 - p1) - s.length) * (p2 - p1) / glm::length(p2 - p1);
+	float currentLength = glm::length(p2 - p1);
+
+	glm::vec3 force = physik.ks_Stiffness * s.KsFactor * (currentLength - s.length) * (p2 - p1) / currentLength;
 
 	m->F[s.id1] += force;
 	m->F[s.id2] -= force;
